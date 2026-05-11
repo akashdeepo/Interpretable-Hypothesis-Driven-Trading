@@ -1,0 +1,47 @@
+# --- transient run artefacts (regeneratable from `python main.py`) ---
+data_cache/
+outputs/
+outputs_paper_csv/
+outputs_run.log
+
+# --- editor / IDE state ---
+.claude/
+.vscode/
+.idea/
+
+# --- backups created during the revision ---
+*.bak
+src_original_v1/
+
+# --- reviewer-side documents (not for public repo) ---
+qfe-1544-peer-review.pdf
+
+# --- manuscript source kept private until accepted ---
+main.tex
+references.bib
+qfe.cls
+figure.pdf
+logo.pdf
+logobottom.pdf
+RESPONSE_LETTER.md
+overleaf_package/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# --- LaTeX build products (uncomment if you build locally) ---
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+*.fdb_latexmk
+*.fls

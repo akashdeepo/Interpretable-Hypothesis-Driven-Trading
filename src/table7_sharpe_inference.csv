@@ -1,0 +1,12 @@
+Statistic,Value
+"Sharpe ratio (excess over zero, ann.)",0.2215021777699146
+"Sharpe ratio (excess over Rf, ann.)",-0.970864367526194
+Skewness,1.2523127326571268
+Kurtosis (Pearson),5.03976346457605
+PSR (SR* = 0),0.7519543838468241
+MinTRL @ 95% (periods),193.7157589584764
+DSR (N = 1 trials),0.7519543838468241
+DSR (N = 10 trials),0.18567551561181223
+DSR (N = 30 trials),0.0818492828647191
+DSR (N = 100 trials),0.032160368830825396
+PBO (single-strategy train/test rank flip),0.5882352941176471

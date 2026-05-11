@@ -1,0 +1,33 @@
+
+EXTENDED DATA ANALYSIS SUMMARY
+================================================================================
+
+ORIGINAL DATA (2020-2024):
+- Sample size: 14 folds
+- Mean return: 0.83% annualized
+- p-value: 0.3930
+- Statistical significance: No
+
+EXTENDED DATA (2015-2024):
+- Sample size: 34 folds
+- Mean return: 0.73% annualized
+- p-value: 0.1849
+- Statistical significance: No
+
+IMPROVEMENT:
+- Added 20 folds (143% increase)
+- p-value changed by -0.2082 (53% reduction)
+- ⚠️  Still not significant
+
+STATISTICAL TESTS:
+- Two-sided t-test: p = 0.1849
+- One-sided t-test: p = 0.0924
+- Bootstrap 95% CI: [-0.0006, 0.0046]
+- Monte Carlo p-value: 0.9655
+- Binomial test (win rate): p = 0.8042
+
+VERDICT: ❌ INSUFFICIENT STATISTICAL EVIDENCE
+RECOMMENDATION: ❌ MAJOR CHANGES NEEDED
+
+================================================================================
+Generated: 2025-11-17 17:22:38.198846

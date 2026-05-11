@@ -1,0 +1,39 @@
+Walk-Forward Validation: Comprehensive Summary Report
+Generated: 2026-05-11 08:23:01
+
+1. Performance summary
+   Folds                                : 34
+   Mean quarterly return                : 0.0009  (+0.37% annualized)
+   Standard deviation                   : 0.0083
+   Sharpe ratio, excess over zero (ann.): 0.2248
+   Sharpe ratio, excess over Rf (ann.)  : -0.9709    [Rf = 2.0% p.a.]
+   Maximum drawdown (cumulative)        : -0.0266
+   Win rate (folds)                     : 0.4706
+
+2. Classical tests (H0: mean return = 0)
+   t-test two-sided  p-value            : 0.5229
+   t-test one-sided  p-value            : 0.2614
+   Bootstrap 95% CI                     : [-0.0017, 0.0038]
+   Sign-flip permutation (10,000)       : 0.5371
+   Binomial test (win > 50%)            : 0.6962
+
+3. Sharpe-ratio inference (Bailey - Lopez de Prado machinery)
+   PSR(SR* = 0)                         : 0.7520
+   Minimum track record length @ 95%    : 193.7 periods (48.4 years)
+   DSR (N =   1 trial)                  : 0.7520
+   DSR (N =  10 trials)                 : 0.1857
+   DSR (N =  30 trials)                 : 0.0818
+   DSR (N = 100 trials)                 : 0.0322
+   PBO (single-strategy train/test rank): 0.5882
+
+4. Benchmark comparison (vs SPY)
+   Strategy mean return                 : +0.37% annualized
+   SPY mean return                      : +14.70% annualized
+   Alpha (quarterly)                    : 0.0012  (+0.48% annualized)
+   Beta                                 : -0.0071
+   Tracking error                       : 0.0871
+   Information ratio                    : -0.4114
+
+5. Overfitting diagnostic
+   Information coefficient              : -0.185  (train vs. test correlation,
+                                          p-value = 0.2953)

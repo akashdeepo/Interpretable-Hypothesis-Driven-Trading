@@ -1,0 +1,10 @@
+Metric,Original (2020-2024),Extended (2015-2024),Change
+Sample Size (Folds),14,34,+20 folds (143% increase)
+Mean Quarterly Return,0.0021,0.0018,-0.03 bps
+Annualized Return,0.0083,0.0073,-0.11 bps
+Standard Deviation,0.0085,0.0077,-0.08 bps
+Sharpe Ratio,0.4900,0.4715,-0.02
+t-statistic,0.8834,1.3542,+0.47
+p-value,0.3930,0.1849,-0.2082 (53% reduction)
+Win Rate,57.14%,44.12%,-13.0%
+Statistical Significance,❌ No,❌ No,✅ IMPROVED
