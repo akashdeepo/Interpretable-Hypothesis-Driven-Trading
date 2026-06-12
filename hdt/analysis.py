@@ -286,27 +286,38 @@ def generate_publication_outputs(
         if r.size == 0:
             return {"N": 0, "Mean": np.nan, "Std": np.nan, "Win Rate": np.nan,
                     "Best": np.nan, "Worst": np.nan, "Sharpe": np.nan}
+        # Sample standard deviation (ddof=1), matching the headline Sharpe
+        # convention used for Table 1 and the body. ddof=0 would make the
+        # sub-period Sharpes inconsistent with the aggregate figures.
+        sd = float(r.std(ddof=1)) if r.size > 1 else 0.0
         return {
             "N": int(r.size),
             "Mean": float(r.mean()),
-            "Std": float(r.std()),
+            "Std": sd,
             "Win Rate": float((r > 0).sum() / r.size),
             "Best": float(r.max()),
             "Worst": float(r.min()),
-            "Sharpe": float(r.mean() / r.std() * np.sqrt(4)) if r.std() > 0 else 0.0,
+            "Sharpe": float(r.mean() / sd * np.sqrt(4)) if sd > 0 else 0.0,
         }
 
-    regimes = wf_results["regime"].values
+    # Table 2 follows the manuscript structure: the low-/high-volatility split
+    # plus notable calendar sub-periods. Masks use the test-window start year so
+    # the table is reproducible directly from the saved walk-forward results.
+    test_years = pd.to_datetime(wf_results["test_start"]).dt.year.values
+    regime_rows = [
+        ("Low volatility (2015-2019)", test_years <= 2019),
+        ("High volatility (2020-2024)", test_years >= 2020),
+        ("Pre-COVID (2017-2019)", (test_years >= 2017) & (test_years <= 2019)),
+        ("COVID year (2020)", test_years == 2020),
+        ("Recovery / inflation (2021)", test_years == 2021),
+        ("Bear market (2022)", test_years == 2022),
+        ("Stabilisation (2023-2024)", test_years >= 2023),
+    ]
     table2 = pd.DataFrame(
         {
-            "Regime": ["Bull (2020-21, 2024)", "Bear (2022)", "Recovery (2023)", "Overall"],
+            "Regime": [name for name, _ in regime_rows],
             **{
-                k: [
-                    regime_block(regimes == "Bull")[k],
-                    regime_block(regimes == "Bear")[k],
-                    regime_block(regimes == "Recovery")[k],
-                    regime_block(np.ones_like(regimes, dtype=bool))[k],
-                ]
+                k: [regime_block(mask)[k] for _, mask in regime_rows]
                 for k in ["N", "Mean", "Std", "Win Rate", "Best", "Worst", "Sharpe"]
             },
         }
@@ -552,40 +563,54 @@ def generate_publication_outputs(
     plt.tight_layout()
     _save_figure(fig, "figure2_statistical_analysis", output_dir)
 
-    # Figure 3: regime comparison
-    bull = returns[regimes == "Bull"]
-    bear = returns[regimes == "Bear"]
-    recov = returns[regimes == "Recovery"]
+    # Figure 3: volatility-regime comparison (matches manuscript Table 2 and the
+    # revised "weak regime separation" narrative). Low-vol = 2015-2019,
+    # High-vol = 2020-2024, split on the test-window start year.
+    test_years = pd.to_datetime(wf_results["test_start"]).dt.year.values
+    low = returns[test_years <= 2019]
+    high = returns[test_years >= 2020]
+    _, p_lh = stats.ttest_ind(low, high, equal_var=False)
+
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+    # Panel A: distribution of fold returns by volatility regime
     ax = axes[0]
     bp = ax.boxplot(
-        [bull, bear, recov] if bear.size and recov.size else [bull],
-        labels=["Bull\n(2020-21, 2024)", "Bear\n(2022)", "Recovery\n(2023)"]
-        if bear.size and recov.size
-        else ["Bull"],
+        [low * 100, high * 100],
+        labels=["Low volatility\n(2015-2019)", "High volatility\n(2020-2024)"],
         patch_artist=True,
         showmeans=True,
         notch=True,
     )
-    for patch, color in zip(bp["boxes"], ["lightgreen", "lightcoral", "lightskyblue"]):
+    for patch, color in zip(bp["boxes"], ["lightskyblue", "lightcoral"]):
         patch.set_facecolor(color)
-    ax.axhline(0, color="black", linestyle="--")
-    ax.set_ylabel("Return")
-    ax.set_title("(A) Return Distribution by Market Regime")
+    ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+    ax.set_ylabel("Quarterly return (%)")
+    ax.set_title("(A) Return Distribution by Volatility Regime")
     ax.grid(alpha=0.3, axis="y")
+    ax.annotate(
+        f"two-sample $t$-test: $p = {p_lh:.2f}$\n(no significant separation)",
+        xy=(0.5, 0.97), xycoords="axes fraction",
+        ha="center", va="top", fontsize=10,
+        bbox=dict(boxstyle="round", fc="white", ec="grey", alpha=0.85),
+    )
 
+    # Panel B: mean quarterly return by calendar year; 2022 is the consistent
+    # failure mode (all four bear-market folds negative).
     ax = axes[1]
-    means = [bull.mean() if bull.size else np.nan,
-             bear.mean() if bear.size else np.nan,
-             recov.mean() if recov.size else np.nan]
-    labels = ["Bull", "Bear", "Recovery"]
-    colors_ = ["green" if (m or 0) > 0 else "red" for m in means]
-    ax.bar(labels, [m * 100 if not np.isnan(m) else 0 for m in means],
-           color=colors_, alpha=0.7, edgecolor="black")
-    ax.axhline(0, color="black")
-    ax.set_ylabel("Mean Return (%)")
-    ax.set_title("(B) Average Returns by Regime")
+    years = np.unique(test_years)
+    year_means = np.array([returns[test_years == y].mean() * 100 for y in years])
+    bar_colors = [
+        "crimson" if y == 2022 else ("seagreen" if m > 0 else "indianred")
+        for y, m in zip(years, year_means)
+    ]
+    ax.bar([str(y) for y in years], year_means, color=bar_colors,
+           alpha=0.85, edgecolor="black")
+    ax.axhline(0, color="black", linewidth=0.8)
+    ax.set_ylabel("Mean quarterly return (%)")
+    ax.set_title("(B) Mean Return by Year (2022 bear market highlighted)")
     ax.grid(alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
 
     plt.tight_layout()
     _save_figure(fig, "figure3_regime_comparison", output_dir)

@@ -45,3 +45,9 @@ env/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+
+# --- resubmission artefacts (not for public repo) ---
+QFE_*.zip
+QFE_qfe-1829_revised_overleaf/
+reply_*.txt
+.extract.py
