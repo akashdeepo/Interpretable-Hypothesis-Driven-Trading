@@ -65,8 +65,8 @@ Running `main.py` regenerates all tables and figures locally in `outputs/`.
 1.  Clone the repository:
 
     ```bash
-    git clone https://github.com/akashdeepo/hypothesis-driven-trading.git
-    cd hypothesis-driven-trading
+    git clone https://github.com/akashdeepo/Interpretable-Hypothesis-Driven-Trading.git
+    cd Interpretable-Hypothesis-Driven-Trading
     ```
 
 2.  Install dependencies:
