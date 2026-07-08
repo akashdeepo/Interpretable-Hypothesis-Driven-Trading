@@ -93,11 +93,20 @@ def add_all_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_features_to_all(market_data: dict) -> dict:
-    """Apply ``add_all_features`` to every DataFrame in ``market_data``."""
+    """Apply ``add_all_features`` to every DataFrame in ``market_data``.
+
+    Frames aligned to the benchmark calendar carry all-NaN rows on dates the
+    symbol did not trade (e.g. KHC before 2015-07-06). Indicators must see
+    only traded bars — rolling/ewm windows spanning the listing boundary would
+    otherwise ingest fabricated zeros — so features are computed on the listed
+    rows and reindexed back to the full calendar.
+    """
     out = {}
     for symbol, df in market_data.items():
         try:
-            out[symbol] = add_all_features(df)
+            listed = df.dropna(subset=["Close"])
+            feats = add_all_features(listed)
+            out[symbol] = feats if len(listed) == len(df) else feats.reindex(df.index)
         except Exception as exc:  # noqa: BLE001
             print(f"  feature engineering failed for {symbol}: {exc}")
     return out

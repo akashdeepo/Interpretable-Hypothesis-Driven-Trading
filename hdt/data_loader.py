@@ -11,6 +11,25 @@ import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 
+from .config import BENCHMARK
+
+
+def align_to_benchmark(
+    market_data: Dict[str, pd.DataFrame], benchmark: str = BENCHMARK
+) -> Dict[str, pd.DataFrame]:
+    """Reindex every frame to the benchmark's trading calendar.
+
+    Downstream fold slicing is positional, so row ``i`` must be the same
+    calendar date in every frame. A late-listing symbol (e.g. KHC, first bar
+    2015-07-06) would otherwise sit shifted in time inside every fold. Dates
+    on which a symbol did not trade become NaN rows, which the feature and
+    hypothesis layers treat as "no signal".
+    """
+    if benchmark not in market_data:
+        return market_data
+    calendar = market_data[benchmark].index
+    return {s: df.reindex(calendar) for s, df in market_data.items()}
+
 
 class DataLoader:
     """Download daily OHLCV bars and cache them as a pickle.
@@ -37,7 +56,7 @@ class DataLoader:
         if not force_refresh and os.path.exists(cache_file):
             print(f"Loading cached data: {cache_file}")
             with open(cache_file, "rb") as f:
-                return pickle.load(f)
+                return align_to_benchmark(pickle.load(f))
 
         print(f"Downloading {len(symbols)} symbols ({start_date} -> {end_date})")
         market_data: Dict[str, pd.DataFrame] = {}
@@ -74,6 +93,7 @@ class DataLoader:
         if failed:
             print(f"  failed: {failed}")
 
+        market_data = align_to_benchmark(market_data)
         with open(cache_file, "wb") as f:
             pickle.dump(market_data, f)
         return market_data

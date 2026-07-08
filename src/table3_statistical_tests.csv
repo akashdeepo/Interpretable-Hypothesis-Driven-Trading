@@ -1,8 +1,8 @@
 Test,Statistic,p-value,Value
-Two-Sided t-test,0.645784271589922,0.5228846049311908,
-One-Sided t-test (greater),0.645784271589922,0.2614423024655954,
-Bootstrap 95% CI - lower,,,-0.001735255544068079
-Bootstrap 95% CI - upper,,,0.0037988774004642676
-Monte Carlo permutation,,0.5371,
-Shapiro-Wilk normality,0.9080692789550904,0.00754566350546285,
-Binomial test (win rate),,0.69620431936346,
+Two-Sided t-test,0.9836396941696416,0.3324499120740041,
+One-Sided t-test (greater),0.9836396941696416,0.16622495603700205,
+Bootstrap 95% CI - lower,,,-0.0011768249393393497
+Bootstrap 95% CI - upper,,,0.00415523333599064
+Monte Carlo permutation,,0.3463,
+Shapiro-Wilk normality,0.8989064018771771,0.0042924153282831905,
+Binomial test (win rate),,0.5679168797796592,

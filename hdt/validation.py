@@ -46,6 +46,12 @@ class WalkForwardValidator:
         verbose: bool = True,
     ) -> pd.DataFrame:
         total_days = len(market_data["SPY"])
+        misaligned = [s for s, df in market_data.items() if len(df) != total_days]
+        if misaligned:
+            raise ValueError(
+                "Frames not aligned to the benchmark calendar (positional fold "
+                f"slicing requires row i == same date in every frame): {misaligned}"
+            )
         idx = self.train_window + 60
         results = []
         fold = 0

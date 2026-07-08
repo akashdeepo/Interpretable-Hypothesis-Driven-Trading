@@ -142,6 +142,8 @@ class ProductionBacktester:
         if execution_idx >= len(market_data[symbol]):
             return False
         execution_price = market_data[symbol]["Open"].iloc[execution_idx]
+        if not np.isfinite(execution_price):
+            return False
         execution_date = market_data[symbol].index[execution_idx]
 
         slippage = execution_price * (self.slippage_bps / 10_000.0)

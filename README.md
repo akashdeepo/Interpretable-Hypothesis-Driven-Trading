@@ -33,18 +33,23 @@ The framework was tested on 100 US Equities (2015–2024), demonstrating market-
 
 ```text
 .
-├── src/
-│   ├── data_loader.py       # yfinance integration and caching
+├── hdt/
+│   ├── config.py            # Universe, sample period, and global parameters
+│   ├── data_loader.py       # yfinance integration, caching, calendar alignment
 │   ├── features.py          # 54-factor feature engineering engine
 │   ├── hypothesis.py        # Logic for "Institutional Accumulation", "Breakouts", etc.
 │   ├── agent.py             # Reinforcement Learning (RL) agent logic
 │   ├── backtester.py        # Event-driven backtesting engine
-│   └── validation.py        # Walk-Forward Validation loop
-├── publication_outputs/     # Generated tables (LaTeX/CSV) and Figures (PNG/PDF)
+│   ├── validation.py        # Walk-Forward Validation loop
+│   ├── stats.py             # Bootstrap / permutation / PSR-DSR inference
+│   └── analysis.py          # Publication tables and figures
+├── src/                     # Published tables (LaTeX/CSV) and figures (PNG/PDF)
 ├── main.py                  # Entry point to run the full validation pipeline
 ├── requirements.txt         # Python dependencies
 └── README.md                # This file
 ```
+
+Running `main.py` regenerates all tables and figures locally in `outputs/`.
 
 -----
 
@@ -103,14 +108,26 @@ The core of this repository is the **Walk-Forward Validation** protocol, designe
 
 ## 📈 Results
 
-The framework automatically generates a suite of analysis files in the `publication_outputs/` directory. Key findings from the 2015-2024 validation period include:
+The framework automatically generates a suite of analysis files (tracked in `src/`, regenerated locally in `outputs/`). Key findings from the 2015-2024 validation period (34 folds, after the 2026-07 calendar-alignment erratum below) include:
 
-  * **Annualized Return:** \~0.55% (Unlevered)
-  * **Sharpe Ratio:** 0.33
-  * **Max Drawdown:** -2.76% (vs -23.8% SPY)
-  * **Beta:** 0.058 (Market Neutral)
+  * **Annualized Return:** \~0.55% (Unlevered), not statistically distinguishable from zero (one-sided t-test p = 0.17, Monte Carlo permutation p = 0.35)
+  * **Sharpe Ratio (annualized):** 0.34
+  * **Max Drawdown (cumulative across folds):** -2.66% (vs -23.8% SPY)
+  * **Beta:** -0.007 (Market Neutral)
 
-*While returns are modest, the low correlation and drawdown highlight the effectiveness of microstructure signals for risk management.*
+*While returns are modest, the low correlation and drawdown highlight the effectiveness of microstructure signals for risk management — and the framework's central point stands: honest walk-forward validation reports honest (unspectacular) numbers.*
+
+-----
+
+## 🩹 Erratum (July 2026): KHC calendar alignment
+
+The originally published results contained a data-alignment discrepancy, found and reported by **Matthew Engel** (independent researcher), whose reimplementation matched the published per-fold results to float precision before isolating the cause.
+
+**Issue.** `WalkForwardValidator.validate` slices each symbol's frame *positionally* (`df.iloc[start:end]`), which assumes row *i* is the same calendar date in every frame. KHC (Kraft Heinz) first traded on 2015-07-06, mid-sample, so its frame had 2,349 rows versus 2,475 for the other 100 symbols. Inside every fold, KHC's rows were therefore shifted roughly six months forward in calendar time — its trades landed in the wrong fold and regime, and it silently dropped out of the final fold entirely.
+
+**Fix.** All frames are now reindexed to the benchmark (SPY) trading calendar after download (`hdt/data_loader.py::align_to_benchmark`); features are computed on each symbol's listed rows only, so pre-listing NaN rows cannot leak into rolling windows; and the validator now rejects unaligned input outright.
+
+**Impact.** 9 of 34 fold returns changed; trade counts changed in 3 folds. Annualized return moved from 0.37% to 0.55%, annualized Sharpe from 0.22 to 0.34, and the fold-level win rate from 47.1% to 50.0%. No qualitative conclusion changes: returns remain statistically indistinguishable from zero, beta remains ≈ 0, and the cumulative max drawdown is unchanged (-2.66%). Pre-fix artifacts are preserved in the git history (`src/` as of commit `5526b00`).
 
 -----
 
